@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<!--
+  * Please see the included README.md file for license terms and conditions.
+  -->
+<head>
+    <title>CodeCracker - Hacking Game</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css">
+    <link rel="stylesheet" href="bower_components/angular-material-icons/angular-material-icons.css">
+
+    <!-- see http://webdesign.tutsplus.com/tutorials/htmlcss-tutorials/quick-tip-dont-forget-the-viewport-meta-tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <style>
+        /* following two viewport lines are equivalent to the meta viewport statement above, needed for Windows */
+        /* see http://www.quirksmode.org/blog/archives/2014/05/html5_dev_conf.html and http://dev.w3.org/csswg/css-device-adapt/ */
+        @-ms-viewport { width: 100vw ; zoom: 100% ; }  @viewport { width: 100vw ; zoom: 100% ; }
+        @-ms-viewport { user-zoom: fixed ; }           @viewport { user-zoom: fixed ; }
+        
+        .md-input-has-value.largeCenter > input {
+            font-size: 2em;
+            text-align: center;
+        }
+        
+        md-input-container {
+            margin: 16px 0 0 0;
+        }
+    </style>
+    
+    <script src="bower_components/moment/min/moment.min.js"></script>
+    <script src="bower_components/firebase/firebase.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angularfire/dist/angularfire.min.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.min.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.min.js"></script>
+    <script src="bower_components/angular-messages/angular-messages.min.js"></script>
+    <script src="bower_components/angular-material/angular-material.min.js"></script>
+    <script src="bower_components/angular-material-icons/angular-material-icons.min.js"></script>
+
+
+    <script src="cordova.js"></script>          <!-- phantom library, needed for Cordova api calls, added during build -->
+    <script src="js/app.js"></script>           <!-- recommended location of your JavaScript code relative to other JS files -->
+    <script src="xdk/init-dev.js"></script>     <!-- normalizes device and document ready events, see README for details -->
+    
+    
+    <script src="modules/app.js"></script>
+    <script src="modules/config.js"></script>
+    <script src="modules/run.js"></script>
+    
+    <script src="modules/main/controllers/mainController.js"></script>
+</head>
+
+<body ng-app="app" ng-controller="mainController" layout="row" layout-fill>
+    <div layout="column" layout-fill>
+        <md-toolbar class="md-hue-2 shadow"  >
+            <div class="md-toolbar-tools">
+                <div class="inset">
+                    <ng-md-icon icon="lock"></ng-md-icon>
+                </div>
+                Code Cracker
+                <span flex></span>
+                <md-menu md-position-mode="target-right target" ng-if="firebaseUser">
+                    <md-button aria-label="User menu" class="md-icon-button md-raised md-primary" ng-click="$mdOpenMenu($event)">
+                        <img class="avatar" ng-if="firebaseUser.photoURL" ng-src="{{firebaseUser.photoURL}}"/>
+                    </md-button>
+                    <md-menu-content width="4">
+                        <em class="inset"><img class="avatar" ng-if="firebaseUser.photoURL" src="{{firebaseUser.photoURL}}"/>{{firebaseUser.displayName}}</em>
+                        <md-menu-divider></md-menu-divider>
+                        <md-menu-item>
+                        <md-button ng-click="signOut()">
+                            <ng-md-icon icon="logout"></ng-md-icon>
+                            Logout
+                        </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+                <md-menu md-position-mode="target-right target" ng-hide="firebaseUser">
+                    <md-button aria-label="User menu" class="md-icon-button md-raised md-primary" ng-click="$mdOpenMenu($event)">
+                        <ng-md-icon icon="person"></ng-md-icon>
+                    </md-button>
+                    <md-menu-content width="4">
+                        <em class="inset" style="color:gray;">login with:</em>
+                        <md-menu-divider></md-menu-divider>
+                        <md-menu-item>
+                            <md-button>
+                                <ng-md-icon icon="facebook"></ng-md-icon>
+                                Facebook
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button ng-click="loginWith('google')">
+                                <ng-md-icon icon="google-plus"></ng-md-icon>
+                                Google
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button>
+                                <ng-md-icon icon="twitter"></ng-md-icon>
+                                Twitter
+                          </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </div>
+        </md-toolbar>
+        <md-content layout="column" id="main-container" flex>
+            <div layout="column" flex layout-padding>
+                <!--<div flex="none" layout-padding layout="row">-->
+                    <div layout="row">
+                        Level: {{levelInWord(level)}}
+                        <span flex></span>
+                        Score: {{score}}
+                    </div>
+                    <div layout="row" style="margin-bottom:0px; padding-bottom:0px" >
+                        <md-input-container flex=33 class="largeCenter">
+                            <label></label>
+                            <input ng-model="codeInput[0]" ng-click="showDialPad()";>
+                        </md-input-container>
+                        <md-input-container flex=33 class="largeCenter">
+                            <label></label>
+                            <input ng-model="codeInput[1]" ng-click="showDialPad()">
+                        </md-input-container>
+                        <md-input-container flex=33 class="largeCenter">
+                            <label></label>
+                            <input ng-model="codeInput[2]" ng-click="showDialPad()">
+                        </md-input-container>
+                    </div>
+                    <div flex layout="column" style="margin-top:0px; padding-top:0px; overflow: auto;">
+                        <md-list class="md-dense" style="margin-top:0px; padding-top:0px;" >
+                            <md-subheader>Clues <em>({{clues.length}})</em></md-subheader>
+                            <md-list-item class="md-3-line" ng-click="null" ng-repeat="clue in clues">
+                            <div layout="row" flex>
+                                <div flex=50 class="md-list-item-text" layout="column">
+                                    <h3 style="white-space: pre-wrap;">{{clue[0]}}{{clue[1]}}{{clue[2]}}</h3>
+                                </div>
+                                <div flex=50 class="md-list-item-text" layout="column">
+                                    
+                                    <h4>{{correctNos = countCorrectCode(clue)}} number{{correctNos>1?'s':''}} {{correctNos>1?'are':'is'}} correct</h4>
+                                    
+                                    <p>{{correctPos = countCorrectPosition(clue)}} number{{correctPos>1?'s':''}} {{correctPos>1?'are':'is well placed'}}</p>
+                                </div>
+                            </div>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                    <div layout="row" id="clues">
+                        <em> XAMF Developers</em>
+                    </div>
+                <!--</div>-->
+            </div>
+        </md-content>
+    </div>
+</body>
+</html>
